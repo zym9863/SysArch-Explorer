@@ -29,7 +29,11 @@ const initialCPUState: CPUState = {
     overflow: false,
     negative: false,
     parity: false
-  }
+  },
+  programCounter: 2048,
+  stackPointer: 1000,
+  currentInstruction: null,
+  executionStage: 'fetch'
 };
 
 // 初始模拟器状态
@@ -225,6 +229,24 @@ export const simulatorActions = {
     simulatorState.update(state => ({
       ...state,
       language
+    }));
+  },
+
+  // 设置指令和总步骤数
+  setInstructions: (instructions: Instruction[]) => {
+    simulatorState.update(state => ({
+      ...state,
+      instructions,
+      totalSteps: instructions.length,
+      currentStep: 0
+    }));
+  },
+
+  // 设置总步骤数
+  setTotalSteps: (totalSteps: number) => {
+    simulatorState.update(state => ({
+      ...state,
+      totalSteps
     }));
   }
 };

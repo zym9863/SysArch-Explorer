@@ -8,6 +8,9 @@
   import { tauriAPI, simulateCompilation } from '$lib/api/tauri';
   import type { CompilationStep } from '$lib/types/system';
 
+  // 编译阶段数量常量
+  const COMPILATION_STAGE_COUNT = 6;
+
   let isRunning = $derived($simulatorState.isRunning);
   let isPaused = $derived($simulatorState.isPaused);
   let currentStep = $derived($simulatorState.currentStep);
@@ -18,6 +21,9 @@
     try {
       // 开始编译过程
       simulatorActions.startCompilation();
+      
+      // 先设置编译阶段的步骤数
+      simulatorActions.setTotalSteps(COMPILATION_STAGE_COUNT);
 
       // 模拟编译过程
       const result = await simulateCompilation(
@@ -28,13 +34,31 @@
           compilationStages.update(stages =>
             stages.map(s => s.id === stage.id ? stage : s)
           );
+          
+          // 如果阶段完成，增加当前步骤
+          if (stage.status === 'completed') {
+            simulatorActions.stepForward();
+          }
         }
       );
 
       if (result.success) {
+        // 编译完成后，更新总步骤数为编译阶段 + 指令执行步骤
+        const totalSteps = COMPILATION_STAGE_COUNT + result.instructions.length;
+        simulatorActions.setTotalSteps(totalSteps);
+        
+        // 存储指令
+        simulatorState.update(state => ({
+          ...state,
+          instructions: result.instructions
+        }));
+        
         // 加载指令到CPU模拟器
         await tauriAPI.loadInstructions(result.instructions);
-        console.log('编译成功，指令已加载');
+        console.log('编译成功，指令已加载，总步骤数:', totalSteps);
+      } else {
+        console.error('编译失败:', result.errors);
+        simulatorActions.stopExecution();
       }
     } catch (error) {
       console.error('模拟启动失败:', error);
@@ -52,6 +76,13 @@
 
   async function stepForward() {
     try {
+      // 检查是否还在编译阶段
+      if ($simulatorState.currentStep < COMPILATION_STAGE_COUNT) {
+        console.log('仍在编译阶段，无法手动单步执行');
+        return;
+      }
+      
+      // 只有在指令执行阶段才可以单步执行
       const result = await tauriAPI.stepExecution();
       console.log('执行步骤:', result);
       simulatorActions.stepForward();
@@ -81,7 +112,11 @@
             指令执行模拟器
           </h2>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            步骤 {currentStep} / {totalSteps}
+            {#if currentStep <= COMPILATION_STAGE_COUNT}
+              编译阶段: {currentStep} / {totalSteps}
+            {:else}
+              执行阶段: {currentStep - COMPILATION_STAGE_COUNT} / {totalSteps - COMPILATION_STAGE_COUNT} (总步骤: {currentStep} / {totalSteps})
+            {/if}
           </div>
         </div>
 
@@ -214,12 +249,18 @@
             </span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">当前步骤:</span>
-            <span class="font-medium">{currentStep}</span>
+            <span class="text-gray-600 dark:text-gray-400">当前阶段:</span>
+            <span class="font-medium">
+              {#if currentStep <= COMPILATION_STAGE_COUNT}
+                编译阶段 ({currentStep}/{COMPILATION_STAGE_COUNT})
+              {:else}
+                执行阶段 ({currentStep - COMPILATION_STAGE_COUNT}/{totalSteps - COMPILATION_STAGE_COUNT})
+              {/if}
+            </span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">总步骤:</span>
-            <span class="font-medium">{totalSteps}</span>
+            <span class="text-gray-600 dark:text-gray-400">总进度:</span>
+            <span class="font-medium">{currentStep} / {totalSteps}</span>
           </div>
         </div>
       </div>
