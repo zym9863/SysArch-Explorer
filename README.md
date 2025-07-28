@@ -1,5 +1,7 @@
 # SysArch Explorer
 
+[English](./README_EN.md) | 中文
+
 一个基于 Tauri + SvelteKit + TypeScript 构建的系统架构探索工具。
 
 ## 项目简介
