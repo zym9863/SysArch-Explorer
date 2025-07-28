@@ -13,17 +13,25 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@monaco-editor/loader": "^1.5.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-opener": "^2",
+    "autoprefixer": "^10.4.21",
+    "lucide-svelte": "^0.528.0",
+    "monaco-editor": "^0.52.2",
+    "postcss": "^8.5.6"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@tauri-apps/cli": "^2",
+    "@types/node": "^24.1.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
+    "tailwindcss": "3.4.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.3",
-    "@tauri-apps/cli": "^2"
+    "vite": "^6.0.3"
   }
 }
