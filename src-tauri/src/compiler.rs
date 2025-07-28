@@ -49,7 +49,7 @@ impl Lexer {
             (r"\b\d+\b", TokenType::Number),
             (r#""[^"]*""#, TokenType::String),
             (r"[+\-*/=<>!&|%]+", TokenType::Operator),
-            (r"[;,(){}[\]]", TokenType::Delimiter),
+            (r"[;,(){}\[\]]", TokenType::Delimiter),
             (r"\s+", TokenType::Whitespace),
             (r"//.*", TokenType::Comment),
         ];
