@@ -160,9 +160,12 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const { glob: globFunc } = require('glob');
             
-            const apkFiles = await globFunc('src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk');
+            // 使用fs.readdirSync代替glob
+            const apkDir = 'src-tauri/gen/android/app/build/outputs/apk/universal/release';
+            const apkFiles = fs.readdirSync(apkDir)
+              .filter(file => file.endsWith('.apk'))
+              .map(file => path.join(apkDir, file));
             
             for (const apkFile of apkFiles) {
               const fileName = path.basename(apkFile);
